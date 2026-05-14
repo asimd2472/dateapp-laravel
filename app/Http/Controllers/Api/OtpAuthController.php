@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Interests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
@@ -69,7 +70,7 @@ class OtpAuthController extends Controller
         }
 
         $user = User::where('email', $request->email)->first();
-
+        $profileStatus = 0;
         if (! $user) {
 
             $user = User::create([
@@ -82,7 +83,15 @@ class OtpAuthController extends Controller
             //     'status' => 0,
             //     'msg' => 'User record not found.',
             // ]);
+           $profileStatus = 0;
+        }else{
+            $interests = Interests::where('user_id', $user->id)->get();
+            if ($interests->isNotEmpty()) {
+                $profileStatus = 1;
+            }
         }
+
+
 
         // ✅ Mark OTP used
         $otpData->used = true;
@@ -96,6 +105,7 @@ class OtpAuthController extends Controller
             'msg' => 'Login success',
             'token' => $token,
             'user_details' => $user,
+            'profileStatus' => $profileStatus,
         ]);
     }
 }
